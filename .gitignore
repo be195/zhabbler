@@ -1,1 +1,12 @@
 .DS_Store
+config.neon
+
+temp/**/*
+!temp/.gitkeep
+
+log/**/*
+!log/.gitkeep
+
+vendor/
+
+Web/public/static/node_modules

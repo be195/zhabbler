@@ -350,5 +350,15 @@ $Router->add("POST", "/api/Posts/get_post_by_id", "", function(){
 	(new Web\Models\Posts())->get_post_by_id((isset($_COOKIE['zhabbler_session']) ? $GLOBALS['session']->sessionToken : ""), $_POST['post_id']);
 });
 
+$Router->add("GET", "/.well-known/webfinger", "", function() {
+	if (!isset($_GET['resource']))
+	{
+		http_response_code(400);
+		die();
+	}
+
+	(new Web\Models\User())->form_webfinger($_GET['resource']);
+});
+
 // 404
 $Router->add("ANY", "/404", "NotFoundPresenter");

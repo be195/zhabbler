@@ -14,7 +14,7 @@ $server = IoServer::factory(
             new Chat()
         )
     ),
-    8000
+    2112 // TODO: change back to 8000 or make dynamic
 );
 
 $server->run();

@@ -81,7 +81,7 @@ class User
     public function get_query_count(string $query){
         return $GLOBALS['db']->query("SELECT * FROM users WHERE nickname LIKE ? AND reason = '' AND activated = 1", "%$query%")->getRowCount();
     }
-    
+
     public function change_profile_cover(string $token, ?array $file): void
     {
         header('Content-Type: application/json');
@@ -293,6 +293,69 @@ class User
         die(json_encode($result));
     }
 
+    public function parse_activitypub_user(string $user): array
+    {
+        $split = explode('@', $user, 2);
+        if (count($split) != 2)
+        {
+            http_response_code(400);
+            die();
+        }
+
+        return [
+            'user' => $split[0],
+            'host' => $split[1],
+        ];
+    }
+
+    public function form_webfinger(string $resource): void
+    {
+        if (substr($resource, 0, 5) != 'acct:')
+        {
+            http_response_code(400);
+            die();
+        }
+
+        $parsed = $this->parse_activitypub_user(substr($resource, 5));
+
+        if ($parsed['host'] == $GLOBALS['config']['activitypub']['host'])
+        {
+            header('Content-Type: application/jrd+json; charset=utf-8');
+
+            $user = $this->get_user_by_nickname($parsed['user']);
+            $self = BASE_URL . 'profile/' . $user->nickname;
+            $result = [
+                'subject' => $resource,
+                'aliases' => [ $self, ],
+                'links' => [
+                    [
+                        'rel' => 'http://webfinger.net/rel/profile-page',
+                        'type' => 'text/html',
+                        'href' => $self,
+                    ],
+                    [
+                        'rel' => 'self',
+                        'type' => 'application/activity+json',
+                        'href' => $self,
+                    ],
+                    [
+                        'rel' => 'http://ostatus.org/schema/1.0/subscribe',
+                        'template' => BASE_URL . 'api/authorize_interaction?uri={uri}',
+                    ],
+                    [
+                        'rel' => 'http://webfinger.net/rel/avatar',
+                        'type' => 'image/png',
+                        'href' => BASE_URL . $user->profileImage,
+                    ]
+                ]
+            ];
+
+            die(json_encode($result));
+        }
+
+        http_response_code(404);
+    }
+
     public function random_profiles(): array
     {
         return $GLOBALS['db']->fetchAll("SELECT * FROM users WHERE activated = 1 AND reason = '' AND rateLimitCounter > 0 ORDER BY rand() LIMIT 4");
@@ -309,7 +372,7 @@ class User
         }
         return $result;
     }
-    
+
     public function change_email(string $email, string $password, string $token): void
     {
         header('Content-Type: application/json');

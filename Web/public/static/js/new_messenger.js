@@ -1,4 +1,4 @@
-var conn = new WebSocket('ws://localhost:8000');
+var conn = new WebSocket('wss://zhb.wico.lol:2112');
 var connection = null;
 conn.addEventListener("error", (event) => {
     connection = false;

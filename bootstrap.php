@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
-ini_set('display_startup_errors',1); 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_startup_errors',1);
+// error_reporting(E_ALL); // FIXME: remove comments
+// ini_set('display_errors', 1);
 require $_SERVER['DOCUMENT_ROOT']."/Web/Entities/Localization.php";
 function autoload(): void
 {
